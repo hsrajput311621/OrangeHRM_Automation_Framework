@@ -1,4 +1,8 @@
 from selenium.webdriver.common.by import By
+from selenium.webdriver.common.keys import Keys
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.common.exceptions import TimeoutException
+
 from Core.BasePage import BasePage
 from Utils.Logger import logger
 
@@ -34,7 +38,7 @@ class SearchEmployeePage(BasePage):
     RESET_BTN = (By.XPATH, "//button[text()=' Reset ']")
 
     # Table rows
-    TABLE_ROWS = (By.XPATH, "//div[@class='oxd-table-body']/div[@role='row']")
+    TABLE_ROWS = (By.XPATH, "//div[contains(@class,'oxd-table-body')]//div[@role='row']")
 
     # Employee Name inside row
     TABLE_EMP_NAME = (By.XPATH, ".//div[@role='cell'][3]//div")
@@ -49,6 +53,15 @@ class SearchEmployeePage(BasePage):
     def enter_employee_name(self, name):
         logger.info(f"Entering employee name: {name}")
         self.type(self.EMP_NAME_INPUT, name)
+        try:
+            self.wait.until(
+                EC.visibility_of_element_located((By.XPATH, "//div[@role='listbox']"))
+            )
+            first = (By.XPATH, "//div[@role='listbox']//div[@role='option'][1]")
+            self.click(first)
+        except TimeoutException:
+            self.press_key(self.EMP_NAME_INPUT, Keys.ARROW_DOWN)
+            self.press_key(self.EMP_NAME_INPUT, Keys.ENTER)
 
     def enter_employee_id(self, emp_id):
         logger.info(f"Entering employee ID: {emp_id}")
@@ -123,9 +136,9 @@ class SearchEmployeePage(BasePage):
         rows = self.get_all_rows()
 
         for row in rows:
-            emp_id = row.find_element(*self.TABLE_EMP_ID).text.strip()
-            if emp_id == expected_id:
-                return True
+            for cell in row.find_elements(By.XPATH, ".//div[@role='cell']"):
+                if cell.text.strip() == expected_id:
+                    return True
 
         return False
 
@@ -150,3 +163,8 @@ class SearchEmployeePage(BasePage):
             self.enter_employee_id(emp_id)
 
         self.click_search()
+        self.wait.until(
+            EC.presence_of_element_located(
+                (By.XPATH, "//div[contains(@class,'oxd-table-body')]")
+            )
+        )

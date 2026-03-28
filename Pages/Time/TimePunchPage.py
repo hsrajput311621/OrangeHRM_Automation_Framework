@@ -1,5 +1,6 @@
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
+from selenium.common.exceptions import TimeoutException
 
 from Core.BasePage import BasePage
 from Utils.Logger import logger
@@ -23,11 +24,14 @@ class TimePunchPage(BasePage):
     # LOCATORS (PageFactory Style)
     # -------------------------------------------------------------
 
-    # Punch In button
     PUNCH_IN_BUTTON = (By.XPATH, "//button[contains(., 'Punch In')]")
 
-    # Punch Out button
     PUNCH_OUT_BUTTON = (By.XPATH, "//button[contains(., 'Punch Out')]")
+
+    PUNCH_IN_OR_OUT = (
+        By.XPATH,
+        "//button[contains(., 'Punch In') or contains(., 'Punch Out')]",
+    )
 
     # Comment/note field on punch screen (scoped to form; avoids matching unrelated textareas)
     COMMENT_FIELD = (By.XPATH, "//form//textarea")
@@ -53,14 +57,25 @@ class TimePunchPage(BasePage):
         url = f"{self.config.get_app_base_url()}/time/attendance/punchIn"
         logger.info("Opening Punch In/Out screen: %s", url)
         self.driver.get(url)
-        self.wait.until(
-            EC.visibility_of_element_located(
-                (
-                    By.XPATH,
-                    "//button[contains(., 'Punch In') or contains(., 'Punch Out')]",
-                )
-            )
+        try:
+            self.wait.until(EC.element_to_be_clickable(self.PUNCH_IN_OR_OUT))
+            return
+        except TimeoutException:
+            logger.info("Punch actions not ready; trying employee selection (proxy punch for admin)")
+
+        emp_in = (
+            By.XPATH,
+            "//label[contains(.,'Employee Name')]/../following-sibling::div//input",
         )
+        try:
+            self.type(emp_in, "a")
+            opt = (By.XPATH, "//div[@role='listbox']//div[@role='option'][1]")
+            self.wait.until(EC.element_to_be_clickable(opt))
+            self.click(opt)
+        except Exception as exc:
+            logger.warning("Employee selection on punch screen failed: %s", exc)
+
+        self.wait.until(EC.element_to_be_clickable(self.PUNCH_IN_OR_OUT))
 
     def enter_comment(self, text):
         """

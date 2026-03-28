@@ -42,7 +42,12 @@ class RecruitmentAddCandidatePage(BasePage):
     OPTION = lambda self, text: (By.XPATH, f"//span[normalize-space()='{text}']")
 
     # Resume upload
-    RESUME_UPLOAD = (By.CSS_SELECTOR, "input[type='file']")
+    RESUME_UPLOAD = (
+        By.XPATH,
+        "//div[contains(@class,'oxd-input-group')]"
+        "[.//label[contains(translate(normalize-space(.), 'RESUME', 'resume'), 'resume')]]"
+        "//input[@type='file']",
+    )
 
     # Keywords
     KEYWORDS = (By.XPATH, "//label[text()='Keywords']/../following-sibling::div//input")

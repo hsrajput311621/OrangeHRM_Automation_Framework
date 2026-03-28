@@ -1,5 +1,8 @@
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.common.exceptions import TimeoutException
+
 from Core.BasePage import BasePage
 from Utils.Logger import logger
 
@@ -40,11 +43,15 @@ class AdminAddUserPage(BasePage):
     USERNAME_INPUT = (By.XPATH,
         "//div[contains(@class,'oxd-input-group')][.//label[normalize-space()='Username']]//input"
     )
-    PASSWORD_INPUT = (By.XPATH,
-        "//div[contains(@class,'oxd-input-group')][.//label[normalize-space()='Password']]//input[@type='password']"
+    # Label + following password fields (matches OXD layouts where input is not under same oxd-input-group node)
+    PASSWORD_INPUT = (
+        By.XPATH,
+        "//label[normalize-space()='Password']/following::input[@type='password'][1]",
     )
-    CONFIRM_PASSWORD_INPUT = (By.XPATH,
-        "//div[contains(@class,'oxd-input-group')][.//label[normalize-space()='Confirm Password']]//input[@type='password']"
+    CONFIRM_PASSWORD_INPUT = (
+        By.XPATH,
+        "//label[contains(normalize-space(),'Confirm') and contains(normalize-space(),'Password')]"
+        "/following::input[@type='password'][1]",
     )
 
     # Save button
@@ -85,7 +92,15 @@ class AdminAddUserPage(BasePage):
         """
         logger.info(f"Entering employee name (auto-suggest): {name}")
         self.type(self.EMPLOYEE_NAME_INPUT, name)
-        self.press_key(self.EMPLOYEE_NAME_INPUT, Keys.ENTER)
+        try:
+            self.wait.until(
+                EC.visibility_of_element_located((By.XPATH, "//div[@role='listbox']"))
+            )
+            first = (By.XPATH, "//div[@role='listbox']//div[@role='option'][1]")
+            self.click(first)
+        except TimeoutException:
+            self.press_key(self.EMPLOYEE_NAME_INPUT, Keys.ARROW_DOWN)
+            self.press_key(self.EMPLOYEE_NAME_INPUT, Keys.ENTER)
 
     def select_status(self, status_text):
         logger.info(f"Selecting Status: {status_text}")
@@ -98,13 +113,17 @@ class AdminAddUserPage(BasePage):
 
     def enter_password(self, text):
         logger.info("Entering password")
-        self.scroll_to(self.PASSWORD_INPUT)
-        self.type(self.PASSWORD_INPUT, text)
+        el = self.wait.until(EC.presence_of_element_located(self.PASSWORD_INPUT))
+        self.highlight(el)
+        el.clear()
+        el.send_keys(text)
 
     def enter_confirm_password(self, text):
         logger.info("Entering confirm password")
-        self.scroll_to(self.CONFIRM_PASSWORD_INPUT)
-        self.type(self.CONFIRM_PASSWORD_INPUT, text)
+        el = self.wait.until(EC.presence_of_element_located(self.CONFIRM_PASSWORD_INPUT))
+        self.highlight(el)
+        el.clear()
+        el.send_keys(text)
 
     def click_save(self):
         logger.info("Clicking Save button")

@@ -27,10 +27,12 @@ class MyInfoPersonalDetailsPage(BasePage):
     LAST_NAME = (By.NAME, "lastName")
 
     # Personal Details are read-only until Edit is clicked.
+    # Header may use icon-only Edit; target the card that contains the Personal Details heading
     PERSONAL_DETAILS_EDIT = (
         By.XPATH,
-        "//div[contains(@class,'orangehrm-horizontal-padding')]"
-        "[.//h6[normalize-space()='Personal Details']]//button[normalize-space()='Edit']",
+        "//div[contains(@class,'orangehrm-card-header')]"
+        "[.//h6[contains(normalize-space(),'Personal Details')]]"
+        "//button[contains(@class,'oxd-button') or contains(@class,'oxd-icon-button')][1]",
     )
 
     # Nickname (label text can vary slightly by build)

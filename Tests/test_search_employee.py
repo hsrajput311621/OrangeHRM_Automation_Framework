@@ -10,6 +10,7 @@ all_test_data = DataReader.merge_data_files(
     "TestData/search_employee.json",
     "TestData/search_employee.csv",
     "TestData/search_employee.xlsx",
+    require_keys=("search_type", "employee_name", "employee_id"),
 )
 
 

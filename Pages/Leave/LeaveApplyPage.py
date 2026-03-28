@@ -48,8 +48,13 @@ class LeaveApplyPage(BasePage):
     # Apply button
     APPLY_BTN = (By.XPATH, "//button[@type='submit']")
 
-    # Success confirmation toast
-    SUCCESS_TOAST = (By.XPATH, "//p[contains(text(),'Successfully Submitted')]")
+    # Success confirmation toast (wording varies by build; toast may use title or body text)
+    SUCCESS_TOAST = (
+        By.XPATH,
+        "//div[contains(@class,'oxd-toast--success')]"
+        "|//div[contains(@class,'oxd-toast-container')]//p["
+        "contains(.,'Successfully') or contains(.,'Submitted') or contains(.,'success')]",
+    )
 
     # -------------------------------------------------------------
     # PAGE ACTIONS
@@ -127,5 +132,5 @@ class LeaveApplyPage(BasePage):
         Check success toast message.
         """
         logger.info("Verifying leave has been submitted successfully")
-        toast = self.find(self.SUCCESS_TOAST)
+        toast = self.wait.until(EC.visibility_of_element_located(self.SUCCESS_TOAST))
         return toast.is_displayed()

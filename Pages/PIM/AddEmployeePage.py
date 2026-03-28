@@ -33,7 +33,13 @@ class AddEmployeePage(BasePage):
     EMP_ID = (By.XPATH, "//label[text()='Employee Id']/../following-sibling::div//input")
 
     # Photo upload
-    PHOTO_UPLOAD = (By.CSS_SELECTOR, "input[type='file']")
+    PHOTO_UPLOAD = (
+        By.XPATH,
+        "//div[contains(@class,'employee-image')]//input[@type='file'] | "
+        "//div[contains(@class,'oxd-input-group')]"
+        "[.//label[contains(.,'Photograph') or contains(.,'Profile Picture')]]"
+        "//input[@type='file']",
+    )
 
     # Toggle for creating login details
     CREATE_LOGIN_TOGGLE = (By.XPATH, "//span[@class='oxd-switch-input oxd-switch-input--active --label-left']")

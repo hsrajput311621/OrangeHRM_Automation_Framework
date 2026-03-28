@@ -1,3 +1,5 @@
+import os
+
 from selenium.webdriver.support.wait import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.by import By
@@ -186,9 +188,12 @@ class BasePage:
 
         What happens:
         - Type file path into input[type='file']
+        - OrangeHRM hides file inputs (opacity 0); visibility wait never succeeds, so use presence.
         """
-        element = self.find(locator)
-        element.send_keys(file_path)
+        path = os.path.abspath(os.path.normpath(file_path))
+        element = self.wait.until(EC.presence_of_element_located(locator))
+        self.highlight(element)
+        element.send_keys(path)
 
     # ----------------------------------------------------------------
     # SWITCH TO FRAME
