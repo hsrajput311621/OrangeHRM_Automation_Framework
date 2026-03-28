@@ -1,4 +1,7 @@
+import os
+
 from selenium.webdriver.common.by import By
+from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support.wait import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import TimeoutException
@@ -10,6 +13,7 @@ _EMPLOYEE_AUTOCOMPLETE_XPATHS = [
     "//label[contains(.,'Employee Name')]/../following-sibling::div//input",
     "//label[contains(.,'Employee')]/../following-sibling::div//input",
     "//div[contains(@class,'oxd-autocomplete-wrapper')]//input",
+    "//div[contains(@class,'oxd-autocomplete-text-input')]//input",
     "//input[contains(@placeholder,'Type for hints')]",
     "//input[contains(@placeholder,'Type')]",
     "//div[contains(@class,'oxd-form-row')]//input[contains(@class,'oxd-input')]",
@@ -85,17 +89,24 @@ class TimePunchPage(BasePage):
         except TimeoutException:
             logger.info("Punch actions not ready; trying employee selection (proxy punch for admin)")
 
-        short = WebDriverWait(self.driver, 20)
+        short = WebDriverWait(self.driver, 25)
         emp_el = short.until(lambda d: _first_visible_input(d, _EMPLOYEE_AUTOCOMPLETE_XPATHS))
         try:
+            self.driver.execute_script("arguments[0].scrollIntoView({block:'center'});", emp_el)
             try:
                 emp_el.clear()
             except Exception:
                 pass
-            emp_el.send_keys("a")
+            # Demo employees list reliably includes "Paul"; Admin username rarely matches autocomplete.
+            hint = (os.getenv("PUNCH_EMPLOYEE_HINT") or "Paul")[:40]
+            emp_el.send_keys(hint)
             opt = (By.XPATH, "//div[@role='listbox']//div[@role='option'][1]")
-            self.wait.until(EC.element_to_be_clickable(opt))
-            self.click(opt)
+            try:
+                short.until(EC.element_to_be_clickable(opt))
+                self.click(opt)
+            except TimeoutException:
+                emp_el.send_keys(Keys.ARROW_DOWN)
+                emp_el.send_keys(Keys.ENTER)
         except Exception as exc:
             logger.warning("Employee selection on punch screen failed: %s", exc)
 

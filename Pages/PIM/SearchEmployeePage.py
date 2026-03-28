@@ -124,7 +124,18 @@ class SearchEmployeePage(BasePage):
         except TimeoutException:
             return False
 
-        bulk = self.driver.find_element(*body_loc).text.lower()
+        # Read text in one JS shot to avoid stale references while the grid re-renders.
+        try:
+            body = self.driver.find_element(*body_loc)
+            bulk = (
+                self.driver.execute_script("return arguments[0].innerText || '';", body) or ""
+            ).lower()
+        except StaleElementReferenceException:
+            body = self.wait.until(EC.visibility_of_element_located(body_loc))
+            bulk = (
+                self.driver.execute_script("return arguments[0].innerText || '';", body) or ""
+            ).lower()
+
         if all(p in bulk for p in parts):
             return True
 
@@ -140,15 +151,23 @@ class SearchEmployeePage(BasePage):
             except TimeoutException:
                 pass
 
-        cells = self.driver.find_elements(
-            By.XPATH, "//div[contains(@class,'oxd-table-body')]//div[@role='cell']"
-        )
-        for cell in cells:
+        for _ in range(3):
             try:
-                if exp in cell.text.strip().lower():
-                    return True
+                cells = self.driver.find_elements(
+                    By.XPATH,
+                    "//div[contains(@class,'oxd-table-body')]//div[@role='cell']",
+                )
+                for cell in cells:
+                    try:
+                        t = cell.text.strip().lower()
+                        if exp in t or all(p in t for p in parts):
+                            return True
+                    except StaleElementReferenceException:
+                        break
+                else:
+                    return False
             except StaleElementReferenceException:
-                return self.validate_employee_present(expected_name)
+                continue
         return False
 
     def validate_employee_id_present(self, expected_id):

@@ -1,4 +1,6 @@
 from selenium.webdriver.common.by import By
+from selenium.webdriver.support import expected_conditions as EC
+
 from Core.BasePage import BasePage
 from Utils.Logger import logger
 
@@ -29,10 +31,16 @@ class MyInfoPersonalDetailsPage(BasePage):
     # Personal Details are read-only until Edit is clicked (text or pencil icon).
     PERSONAL_DETAILS_EDIT = (
         By.XPATH,
+        "("
+        "//div[contains(@class,'orangehrm-card-header')][.//h6[contains(normalize-space(),'Personal Details')]]"
+        "//button[contains(@class,'oxd-icon-button') or contains(@class,'oxd-button')][1] | "
         "//h6[contains(normalize-space(),'Personal Details')]/ancestor::div[contains(@class,'orangehrm-card')][1]"
-        "//button[contains(@class,'oxd-icon-button') or contains(@class,'oxd-button')][1]"
-        "|//h6[contains(normalize-space(),'Personal Details')]/following::button["
-        "contains(@class,'oxd-icon-button') or normalize-space()='Edit'][1]",
+        "//button[contains(@class,'oxd-icon-button') or contains(@class,'oxd-button')][1] | "
+        "//h6[contains(normalize-space(),'Personal Details')]/following::button["
+        "contains(@class,'oxd-icon-button') or normalize-space()='Edit'][1] | "
+        "//button[normalize-space()='Edit'][ancestor::div[contains(@class,'orangehrm-card')]"
+        "[.//h6[contains(normalize-space(),'Personal Details')]]]]"
+        ")[1]",
     )
 
     # Nickname (label text can vary slightly by build)
@@ -78,6 +86,12 @@ class MyInfoPersonalDetailsPage(BasePage):
 
     def click_edit_personal_details(self):
         logger.info("Clicking Edit on Personal Details section")
+        self.wait_for_no_form_loader()
+        self.wait.until(
+            EC.presence_of_element_located(
+                (By.XPATH, "//h6[contains(normalize-space(),'Personal Details')]")
+            )
+        )
         self.click(self.PERSONAL_DETAILS_EDIT)
 
     def enter_first_name(self, text):

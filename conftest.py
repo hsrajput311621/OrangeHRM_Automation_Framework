@@ -54,13 +54,22 @@ def _ensure_test_upload_files(test_data_dir: Path) -> None:
         logger.info("Created minimal TestData asset: %s", photo)
 
 
+def _bootstrap_test_data_assets():
+    root = Path(__file__).resolve().parent
+    _ensure_test_upload_files(root / "TestData")
+
+
+def pytest_configure(config):
+    """Runs before collection; ensures upload fixtures exist even if session hooks differ by runner."""
+    _bootstrap_test_data_assets()
+
+
 def pytest_sessionstart(session):
     """
     Jenkins/Git clones may omit binary fixtures; Chrome also rejects some paths with spaces.
     Ensure minimal resume.pdf / photo.png exist under TestData/ before any test runs.
     """
-    root = Path(__file__).resolve().parent
-    _ensure_test_upload_files(root / "TestData")
+    _bootstrap_test_data_assets()
 
 
 # -------------------------------------------------------
@@ -161,6 +170,7 @@ def pytest_runtest_makereport(item):
 
         except Exception as exc:
             logger.error(f"Failed to take screenshot: {exc}")
+
 
 @pytest.fixture(scope="session")
 def api_client():

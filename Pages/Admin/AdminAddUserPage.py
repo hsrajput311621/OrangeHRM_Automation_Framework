@@ -1,5 +1,6 @@
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
+from selenium.webdriver.support.wait import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import TimeoutException
 
@@ -100,6 +101,7 @@ class AdminAddUserPage(BasePage):
     def enter_username(self, text):
         logger.info(f"Entering username: {text}")
         self.type(self.USERNAME_INPUT, text)
+        self.wait_for_no_form_loader()
 
     def _visible_password_inputs(self):
         """Add User DOM varies by build; use visible password fields in order (password, confirm)."""
@@ -108,6 +110,8 @@ class AdminAddUserPage(BasePage):
             "//div[contains(@class,'orangehrm-card')]//input[@type='password']",
             "//div[contains(@class,'oxd-form')]//input[@type='password']",
             "//form//input[@type='password' and not(@readonly)]",
+            "//div[contains(@class,'oxd-input-group')][.//label[contains(.,'Password')]]//input[@type='password']",
+            "//input[@type='password' and not(@readonly)]",
         ]
         for xp in xpaths:
             els = self.driver.find_elements(By.XPATH, xp)
@@ -120,10 +124,13 @@ class AdminAddUserPage(BasePage):
         logger.info("Entering password")
 
         def two_fields(_driver):
+            self.wait_for_no_form_loader()
             fields = self._visible_password_inputs()
             return fields if len(fields) >= 2 else False
 
-        fields = self.wait.until(two_fields)
+        fields = WebDriverWait(
+            self.driver, self.config.get_timeout("explicit_wait")
+        ).until(two_fields)
         el = fields[0]
         self.highlight(el)
         el.clear()

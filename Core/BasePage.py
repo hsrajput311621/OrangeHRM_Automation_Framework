@@ -227,19 +227,24 @@ class BasePage:
                 "Commit TestData assets or run tests from a repo where pytest_sessionstart can create them."
             )
 
+        # Chrome/ChromeDriver on Windows often returns "File not found" for paths with spaces
+        # (e.g. Jenkins workspace "OrangeHRM Automation Framework"). Always upload from TEMP.
         upload_path = path
         tmp_copy = None
-        if os.name == "nt" and " " in path:
+        if os.name == "nt":
             suffix = os.path.splitext(path)[1] or ".bin"
             fd, tmp_copy = tempfile.mkstemp(prefix="ohrm_upload_", suffix=suffix)
             os.close(fd)
             shutil.copy2(path, tmp_copy)
             upload_path = tmp_copy
 
+        # Some drivers are picky about backslashes; forward slashes work on Windows too.
+        send_path = upload_path.replace("\\", "/")
+
         try:
             element = self.wait.until(EC.presence_of_element_located(locator))
             self.highlight(element)
-            element.send_keys(upload_path)
+            element.send_keys(send_path)
         finally:
             if tmp_copy and os.path.isfile(tmp_copy):
                 try:

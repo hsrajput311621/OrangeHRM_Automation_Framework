@@ -1,6 +1,7 @@
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support import expected_conditions as EC
+from selenium.common.exceptions import TimeoutException
 
 from Core.BasePage import BasePage
 from Utils.Logger import logger
@@ -123,6 +124,7 @@ class LeaveApplyPage(BasePage):
     def click_apply(self):
         logger.info("Clicking Apply button")
         self.click(self.APPLY_BTN)
+        self.wait_for_no_form_loader()
 
     # -------------------------------------------------------------
     # HIGH-LEVEL COMPLETE FLOW
@@ -145,5 +147,20 @@ class LeaveApplyPage(BasePage):
         Check success toast message.
         """
         logger.info("Verifying leave has been submitted successfully")
-        toast = self.wait.until(EC.presence_of_element_located(self.SUCCESS_TOAST))
-        return toast.is_displayed()
+        try:
+            toast = self.wait.until(EC.visibility_of_element_located(self.SUCCESS_TOAST))
+            return toast.is_displayed()
+        except TimeoutException:
+            # Some builds show a short-lived toast; accept success text anywhere in toast container.
+            alt = (
+                By.XPATH,
+                "//div[contains(@class,'oxd-toast')]//*["
+                "contains(translate(normalize-space(.),"
+                "'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),'success')"
+                " or contains(.,'Submitted') or contains(.,'Successfully')]",
+            )
+            try:
+                el = self.wait.until(EC.visibility_of_element_located(alt))
+                return el.is_displayed()
+            except TimeoutException:
+                return False
