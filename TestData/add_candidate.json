@@ -1,0 +1,14 @@
+[
+  {
+    "first_name": "John",
+    "middle_name": "A",
+    "last_name": "Smith",
+    "email": "john.smith@example.com",
+    "contact_number": "9876543210",
+    "vacancy": "Software Engineer",
+    "resume_path": "TestData/resume.pdf",
+    "keywords": "Selenium, Python",
+    "notes": "Good automation experience",
+    "date_of_application": "2026-03-28"
+  }
+]

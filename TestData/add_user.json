@@ -1,0 +1,9 @@
+[
+  {
+    "user_role": "Admin",
+    "employee_name": "Paul",
+    "status": "Enabled",
+    "username": "testuser1",
+    "password": "Password@123"
+  }
+]

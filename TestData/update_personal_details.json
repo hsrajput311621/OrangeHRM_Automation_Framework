@@ -1,0 +1,13 @@
+[
+  {
+    "first_name": "Hitesh",
+    "middle_name": "Raj",
+    "last_name": "Put",
+    "nickname": "HR",
+    "employee_id": "12345",
+    "nationality": "Indian",
+    "marital_status": "Single",
+    "gender": "Male",
+    "dob": "1995-06-15"
+  }
+]

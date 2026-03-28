@@ -1,0 +1,10 @@
+[
+  {
+    "first_name": "John",
+    "middle_name": "A",
+    "last_name": "Doe",
+    "employee_id": "1234",
+    "dob": "1993-05-10",
+    "photo_path": "TestData/photo.png"
+  }
+]
