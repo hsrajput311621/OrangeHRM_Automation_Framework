@@ -5,15 +5,11 @@ from Pages.LoginPage import LoginPage
 from Pages.DashboardPage import DashboardPage
 from Pages.MyInfo.MyInfoPersonalDetailsPage import MyInfoPersonalDetailsPage
 
-# ---------------------------------------------------------
-# LOAD TEST DATA (JSON + CSV + Excel)
-# ---------------------------------------------------------
-
-testdata_json = DataReader("TestData/update_personal_details.json").get_data()
-testdata_csv = DataReader("TestData/update_personal_details.csv").get_data()
-testdata_excel = DataReader("TestData/update_personal_details.xlsx").get_data()
-
-all_test_data = testdata_json + testdata_csv + testdata_excel
+all_test_data = DataReader.merge_data_files(
+    "TestData/update_personal_details.json",
+    "TestData/update_personal_details.csv",
+    "TestData/update_personal_details.xlsx",
+)
 
 
 @pytest.mark.parametrize("row", all_test_data)

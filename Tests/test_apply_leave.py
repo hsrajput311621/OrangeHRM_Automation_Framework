@@ -6,16 +6,11 @@ from Pages.DashboardPage import DashboardPage
 from Pages.Leave.LeaveApplyPage import LeaveApplyPage
 
 
-# ---------------------------------------------------------
-# LOAD TEST DATA (JSON + CSV + Excel)
-# ---------------------------------------------------------
-
-testdata_json = DataReader("TestData/apply_leave.json").get_data()
-testdata_csv = DataReader("TestData/apply_leave.csv").get_data()
-testdata_excel = DataReader("TestData/apply_leave.xlsx").get_data()
-
-# Combine everything → full data-driven testing
-all_test_data = testdata_json + testdata_csv + testdata_excel
+all_test_data = DataReader.merge_data_files(
+    "TestData/apply_leave.json",
+    "TestData/apply_leave.csv",
+    "TestData/apply_leave.xlsx",
+)
 
 
 @pytest.mark.parametrize("row", all_test_data)

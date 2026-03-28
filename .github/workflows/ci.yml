@@ -24,7 +24,7 @@ jobs:
         run: pytest Tests/ --alluredir=Reports/allure-results
 
       - name: Run API Tests
-        run: pytest TestsAPI/ --alluredir=Reports/allure-api-results
+        run: pytest TestAPI/ --alluredir=Reports/allure-api-results
 
       - name: Run Performance Tests (Locust)
         run: locust -f Performance/Locust/locustfile.py --headless -u 10 -r 2 -t 20s

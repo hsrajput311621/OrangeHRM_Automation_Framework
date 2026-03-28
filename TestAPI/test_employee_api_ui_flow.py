@@ -1,3 +1,9 @@
+"""
+Hybrid test: REST API + browser UI in one flow.
+
+Skipped unless ORANGEHRM_API_TOKEN is set (see TestAPI/conftest.py), because create/delete
+API calls require Bearer auth. When you add a token, fix JSON bodies to match OrangeHRM v2 docs.
+"""
 import pytest
 
 from API.endpoints import CREATE_EMPLOYEE, DELETE_EMPLOYEE

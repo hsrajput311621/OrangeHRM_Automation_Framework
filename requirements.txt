@@ -1,5 +1,4 @@
 selenium==4.20.0
-webdriver-manager==4.0.0
 pytest==8.2.1
 pytest-xdist==3.5.0
 pytest-html==4.1.0
@@ -9,5 +8,6 @@ openpyxl==3.1.2
 locust==2.23.1
 requests==2.31.0
 flake8==7.0.0
-numpy==1.26.4
-pandas==2.1.4
+# Wheels for Python 3.11–3.13 (avoids compiling NumPy on agents without a C compiler).
+numpy>=2.0.0,<3.0.0
+pandas>=2.2.0,<3.0.0

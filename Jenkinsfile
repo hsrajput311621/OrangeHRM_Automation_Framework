@@ -51,10 +51,6 @@ pipeline {
         VENV_DIR    = ".venv"
         REPORTS_DIR = "Reports"
         SCREEN_DIR  = "Screenshots"
-
-        // IMPORTANT: Your actual Python path (correct)
-      //  PYTHON_EXE = "C:\\Users\\hiteshr\\AppData\\Local\\Programs\\Python\\Python313\\python.exe"
-        PYTHON_EXE = "C:\\Users\\hiteshr\\AppData\\Local\\Programs\\Python\\Python311\\python.exe"
     }
 
     stages {
@@ -68,7 +64,7 @@ pipeline {
         stage('Set up Python venv') {
             steps {
                 bat """
-                    "${PYTHON_EXE}" -m venv ${VENV_DIR}
+                    python -m venv ${VENV_DIR}
                     ${VENV_DIR}\\Scripts\\pip install --upgrade pip
                     ${VENV_DIR}\\Scripts\\pip install -r requirements.txt
                 """
@@ -93,7 +89,7 @@ pipeline {
         stage('Run API Tests') {
             steps {
                 bat """
-                    ${VENV_DIR}\\Scripts\\pytest TestsAPI/ --alluredir=${REPORTS_DIR}\\api
+                    ${VENV_DIR}\\Scripts\\pytest TestAPI/ --alluredir=${REPORTS_DIR}\\api
                 """
             }
         }

@@ -4,15 +4,12 @@ from Pages.LoginPage import LoginPage
 from Pages.DashboardPage import DashboardPage
 from Pages.PIM.AddEmployeePage import AddEmployeePage
 
-# ---------------------------------------------------------
-# LOAD TEST DATA (JSON + CSV + Excel)
-# ---------------------------------------------------------
-
-testdata_json = DataReader("TestData/add_employee.json").get_data()
-testdata_csv = DataReader("TestData/add_employee.csv").get_data()
-testdata_excel = DataReader("TestData/add_employee.xlsx").get_data()
-
-all_test_data = testdata_json + testdata_csv + testdata_excel
+# JSON + CSV always present; .xlsx optional (see DataReader.merge_data_files).
+all_test_data = DataReader.merge_data_files(
+    "TestData/add_employee.json",
+    "TestData/add_employee.csv",
+    "TestData/add_employee.xlsx",
+)
 
 
 @pytest.mark.parametrize("row", all_test_data)

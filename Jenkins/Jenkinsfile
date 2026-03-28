@@ -22,7 +22,7 @@ pipeline {
 
         stage('Run API Tests') {
             steps {
-                sh 'pytest TestsAPI/ --alluredir=Reports/allure-api-results'
+                sh 'pytest TestAPI/ --alluredir=Reports/allure-api-results'
             }
         }
 

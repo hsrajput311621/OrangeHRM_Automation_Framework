@@ -1,20 +1,30 @@
+import os
+
 import pytest
+
 from API.endpoints import DELETE_USER
+
 
 def test_delete_user(api_client):
     """
-    Why this test:
-    - DELETE API testing is a MUST for interview.
-    - We simulate deleting a user by ID.
+    Why:
+    - DELETE is part of a typical CRUD demo.
+
+    Important:
+    - Deleting real users is destructive. We only run this when you explicitly set
+      ORANGEHRM_DELETE_USER_ID in Env/.env so Jenkins does not remove random users.
 
     Steps:
-    1) Specify user ID
-    2) Send DELETE request
-    3) Check status code 200/204
+    1) Read target id from the environment.
+    2) DELETE {DELETE_USER}{id}.
+    3) Assert a successful status code.
     """
-
-    user_id = 12  # example, you change based on your data
+    user_id = os.getenv("ORANGEHRM_DELETE_USER_ID")
+    if not user_id:
+        pytest.skip("Set ORANGEHRM_DELETE_USER_ID to run this destructive API test.")
 
     response = api_client.delete(f"{DELETE_USER}{user_id}")
 
-    assert response.status_code in [200, 204], "Delete user API failed."
+    assert response.status_code in (200, 204), (
+        f"Delete failed ({response.status_code}): {response.text[:500]}"
+    )

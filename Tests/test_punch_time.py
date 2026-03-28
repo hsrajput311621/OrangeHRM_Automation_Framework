@@ -6,16 +6,11 @@ from Pages.DashboardPage import DashboardPage
 from Pages.Time.TimePunchPage import TimePunchPage
 
 
-# ---------------------------------------------------------
-# LOAD TEST DATA (JSON + CSV + Excel)
-# ---------------------------------------------------------
-
-testdata_json = DataReader("TestData/punch_time.json").get_data()
-testdata_csv = DataReader("TestData/punch_time.csv").get_data()
-testdata_excel = DataReader("TestData/punch_time.xlsx").get_data()
-
-# Combine all → full data-driven testing
-all_test_data = testdata_json + testdata_csv + testdata_excel
+all_test_data = DataReader.merge_data_files(
+    "TestData/punch_time.json",
+    "TestData/punch_time.csv",
+    "TestData/punch_time.xlsx",
+)
 
 
 @pytest.mark.parametrize("row", all_test_data)

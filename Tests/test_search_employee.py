@@ -6,16 +6,11 @@ from Pages.DashboardPage import DashboardPage
 from Pages.PIM.SearchEmployeePage import SearchEmployeePage
 
 
-# ---------------------------------------------------------
-# LOAD TEST DATA (JSON + CSV + Excel)
-# ---------------------------------------------------------
-
-testdata_json = DataReader("TestData/search_employee.json").get_data()
-testdata_csv = DataReader("TestData/search_employee.csv").get_data()
-testdata_excel = DataReader("TestData/search_employee.xlsx").get_data()
-
-# Combine everything
-all_test_data = testdata_json + testdata_csv + testdata_excel
+all_test_data = DataReader.merge_data_files(
+    "TestData/search_employee.json",
+    "TestData/search_employee.csv",
+    "TestData/search_employee.xlsx",
+)
 
 
 @pytest.mark.parametrize("row", all_test_data)

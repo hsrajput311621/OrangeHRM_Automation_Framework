@@ -6,16 +6,11 @@ from Pages.DashboardPage import DashboardPage
 from Pages.Admin.AdminAddUserPage import AdminAddUserPage
 
 
-# ---------------------------------------------------------
-# LOAD TEST DATA (JSON + CSV + Excel)
-# ---------------------------------------------------------
-
-testdata_json = DataReader("TestData/add_user.json").get_data()
-testdata_csv = DataReader("TestData/add_user.csv").get_data()
-testdata_excel = DataReader("TestData/add_user.xlsx").get_data()
-
-# Combine all
-all_test_data = testdata_json + testdata_csv + testdata_excel
+all_test_data = DataReader.merge_data_files(
+    "TestData/add_user.json",
+    "TestData/add_user.csv",
+    "TestData/add_user.xlsx",
+)
 
 
 @pytest.mark.parametrize("row", all_test_data)

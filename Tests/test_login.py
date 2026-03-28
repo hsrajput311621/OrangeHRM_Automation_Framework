@@ -5,23 +5,16 @@ from Pages.DashboardPage import DashboardPage
 
 
 # ---------------------------------------------------------
-# LOAD TEST DATA (you can switch between JSON/CSV/Excel)
+# LOAD TEST DATA (JSON + CSV + optional Excel)
 # ---------------------------------------------------------
-
-# ✅ Read from JSON
-testdata_json = DataReader("TestData/login.json").get_data()
-
-# ✅ Read from CSV
-testdata_csv = DataReader("TestData/login.csv").get_data()
-
-# ✅ Read from Excel
-testdata_excel = DataReader("TestData/login.xlsx").get_data()
-
-
-# ---------------------------------------------------------
-# ✅ Combine all data for full coverage
-# ---------------------------------------------------------
-all_test_data = testdata_json + testdata_csv + testdata_excel
+# Step 1: merge_data_files reads each path that exists.
+# Step 2: If login.xlsx is not in the repo (common on Jenkins), we skip it with a log
+#         warning instead of crashing during pytest collection.
+all_test_data = DataReader.merge_data_files(
+    "TestData/login.json",
+    "TestData/login.csv",
+    "TestData/login.xlsx",
+)
 
 
 # ---------------------------------------------------------

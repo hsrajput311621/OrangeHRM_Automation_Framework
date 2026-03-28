@@ -1,5 +1,17 @@
+"""
+Logging setup for the whole framework.
+
+Why logging instead of only print():
+- Pytest and Jenkins capture stdout, but files like Logs/automation.log survive after the run.
+- You can set levels (DEBUG in file, INFO on console) without changing test code.
+
+What happens when this module is imported:
+1) Ensure Logs/ exists (mkdir once).
+2) Create one named logger "OrangeHRM_Automation".
+3) Attach three handlers: console (INFO+), automation.log (DEBUG+), error.log (ERROR+).
+4) Other modules do `from Utils.Logger import logger` and call logger.info(...).
+"""
 import logging
-import os
 from pathlib import Path
 
 

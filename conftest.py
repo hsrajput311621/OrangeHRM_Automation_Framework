@@ -1,8 +1,17 @@
+"""
+conftest.py — pytest’s special file: hooks and fixtures here are auto-discovered.
+
+Flow for each UI test:
+1) Session starts → `config` fixture loads Config/config.json + Env/.env once.
+2) Each test → `driver` fixture opens Chrome, yields `driver`, then quits.
+3) After a failed test → `pytest_runtest_makereport` saves a PNG and attaches Allure.
+"""
 import os
-import pytest
-import allure
 from datetime import datetime
 from pathlib import Path
+
+import allure
+import pytest
 
 from Core.ConfigLoader import ConfigLoader
 from Core.DriverManager import DriverManager
@@ -110,6 +119,17 @@ def pytest_runtest_makereport(item):
 
 @pytest.fixture(scope="session")
 def api_client():
+    """
+    Why:
+    - API tests share one client with the same base URL and auth headers.
+
+    What happens:
+    - If ORANGEHRM_API_TOKEN is set, requests include Authorization: Bearer <token>.
+    - TestAPI tests are skipped when the token is missing (see TestAPI/conftest.py).
+    """
     from API.client import APIClient
     from API.endpoints import BASE_API
-    return APIClient(BASE_API)
+
+    token = os.getenv("ORANGEHRM_API_TOKEN")
+    headers = {"Authorization": f"Bearer {token}", "Accept": "application/json"} if token else {}
+    return APIClient(BASE_API, default_headers=headers)

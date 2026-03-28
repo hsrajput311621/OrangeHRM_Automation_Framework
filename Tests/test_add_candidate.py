@@ -6,16 +6,11 @@ from Pages.DashboardPage import DashboardPage
 from Pages.Recruitment.RecruitmentAddCandidatePage import RecruitmentAddCandidatePage
 
 
-# ----------------------------------------------------------------
-# LOAD TEST DATA (JSON + CSV + Excel)
-# ----------------------------------------------------------------
-
-testdata_json = DataReader("TestData/add_candidate.json").get_data()
-testdata_csv = DataReader("TestData/add_candidate.csv").get_data()
-testdata_excel = DataReader("TestData/add_candidate.xlsx").get_data()
-
-# Combine all sources → full data-driven testing
-all_test_data = testdata_json + testdata_csv + testdata_excel
+all_test_data = DataReader.merge_data_files(
+    "TestData/add_candidate.json",
+    "TestData/add_candidate.csv",
+    "TestData/add_candidate.xlsx",
+)
 
 
 @pytest.mark.parametrize("row", all_test_data)
