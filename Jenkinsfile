@@ -53,7 +53,8 @@ pipeline {
         SCREEN_DIR  = "Screenshots"
 
         // IMPORTANT: Your actual Python path (correct)
-        PYTHON_EXE = "C:\\Users\\hiteshr\\AppData\\Local\\Programs\\Python\\Python313\\python.exe"
+      //  PYTHON_EXE = "C:\\Users\\hiteshr\\AppData\\Local\\Programs\\Python\\Python313\\python.exe"
+        PYTHON_EXE = "C:\\Users\\hiteshr\\AppData\\Local\\Programs\\Python\\Python311\\python.exe"
     }
 
     stages {
