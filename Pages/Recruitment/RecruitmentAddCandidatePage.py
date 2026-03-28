@@ -63,8 +63,12 @@ class RecruitmentAddCandidatePage(BasePage):
     # Save button
     SAVE_BUTTON = (By.XPATH, "//button[@type='submit']")
 
-    # Success toast
-    SUCCESS_TOAST = (By.XPATH, "//p[contains(text(),'Successfully Saved')]")
+    # Success toast (wording varies slightly by build)
+    SUCCESS_TOAST = (
+        By.XPATH,
+        "//p[contains(.,'Successfully Saved') or contains(.,'Successfully')]"
+        "|//div[contains(@class,'oxd-toast--success')]//p",
+    )
 
     # -------------------------------------------------------------
     # PAGE ACTIONS
@@ -156,5 +160,5 @@ class RecruitmentAddCandidatePage(BasePage):
 
     def verify_candidate_saved(self):
         logger.info("Checking candidate saved success toast")
-        toast = self.find(self.SUCCESS_TOAST)
+        toast = self.wait.until(EC.presence_of_element_located(self.SUCCESS_TOAST))
         return toast.is_displayed()

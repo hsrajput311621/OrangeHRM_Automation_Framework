@@ -108,12 +108,25 @@ class SearchEmployeePage(BasePage):
         - To confirm that the searched employee appears in results.
 
         What happens:
-        - Re-query cells after Search (table refresh makes row WebElements stale).
+        - Wait for grid to settle; demo data often shows e.g. "Paul Collings" while search used "Paul".
+        - Match if every word from the expected name appears in the table body text.
         """
         logger.info(f"Validating employee name in search results: {expected_name}")
         exp = expected_name.strip().lower()
-        if not exp:
+        parts = [p for p in exp.split() if p]
+        if not parts:
             return False
+
+        self.wait_for_no_form_loader()
+        body_loc = (By.CSS_SELECTOR, ".oxd-table-body")
+        try:
+            self.wait.until(EC.visibility_of_element_located(body_loc))
+        except TimeoutException:
+            return False
+
+        bulk = self.driver.find_element(*body_loc).text.lower()
+        if all(p in bulk for p in parts):
+            return True
 
         trans = "translate(., 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz')"
         if "'" not in exp:
@@ -184,3 +197,4 @@ class SearchEmployeePage(BasePage):
                 (By.XPATH, "//div[contains(@class,'oxd-table-body')]")
             )
         )
+        self.wait_for_no_form_loader()

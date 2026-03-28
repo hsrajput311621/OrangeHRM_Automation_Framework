@@ -56,7 +56,10 @@ class AddEmployeePage(BasePage):
     SAVE_BTN = (By.XPATH, "//button[@type='submit']")
 
     # After saving, employee profile heading appears
-    PERSONAL_DETAILS_HEADER = (By.XPATH, "//h6[text()='Personal Details']")
+    PERSONAL_DETAILS_HEADER = (
+        By.XPATH,
+        "//h6[contains(normalize-space(),'Personal Details')]",
+    )
 
     # -------------------------------------------------------------
     # PAGE ACTIONS

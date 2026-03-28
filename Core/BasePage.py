@@ -7,6 +7,7 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.common.keys import Keys
+from selenium.common.exceptions import ElementClickInterceptedException, TimeoutException
 
 from Utils.Logger import logger
 
@@ -27,6 +28,19 @@ class BasePage:
             driver,
             config.get_timeout("explicit_wait")
         )
+
+    # OrangeHRM shows a full-screen-ish overlay while forms load/save.
+    FORM_LOADER = (By.CSS_SELECTOR, "div.oxd-form-loader")
+
+    def wait_for_no_form_loader(self):
+        """
+        Wait until the OXD form loader is gone so clicks are not intercepted.
+        If no loader is present, returns immediately.
+        """
+        try:
+            self.wait.until(EC.invisibility_of_element_located(self.FORM_LOADER))
+        except TimeoutException:
+            logger.warning("oxd-form-loader still visible after explicit wait")
 
     # ----------------------------------------------------------------
     # HIGHLIGHT ELEMENT (YELLOW)
@@ -75,14 +89,25 @@ class BasePage:
         - Clicks an element using explicit wait.
 
         What will happen:
-        - Wait until element is clickable.
-        - Highlight it.
-        - Click it.
+        - Wait for form loader overlay to disappear (OrangeHRM).
+        - Wait until element is clickable, highlight, click.
+        - If click is intercepted by a loader, wait again and retry; then JS click.
         """
         logger.info(f"Clicking element: {locator}")
+        self.wait_for_no_form_loader()
         element = self.wait.until(EC.element_to_be_clickable(locator))
         self.highlight(element)
-        element.click()
+        try:
+            element.click()
+        except ElementClickInterceptedException:
+            logger.info("Click intercepted; waiting for loader and retrying")
+            self.wait_for_no_form_loader()
+            element = self.wait.until(EC.element_to_be_clickable(locator))
+            self.highlight(element)
+            try:
+                element.click()
+            except ElementClickInterceptedException:
+                self.driver.execute_script("arguments[0].click();", element)
 
     # ----------------------------------------------------------------
     # TYPE TEXT
@@ -193,6 +218,8 @@ class BasePage:
         - OrangeHRM hides file inputs (opacity 0); visibility wait never succeeds, so use presence.
         - On Windows, ChromeDriver often fails when the path contains spaces; copy to TEMP first.
         """
+        self.wait_for_no_form_loader()
+
         path = os.path.abspath(os.path.normpath(file_path))
         if not os.path.isfile(path):
             raise FileNotFoundError(

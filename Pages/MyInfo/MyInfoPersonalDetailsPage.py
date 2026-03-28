@@ -62,8 +62,12 @@ class MyInfoPersonalDetailsPage(BasePage):
     # Date of birth
     DOB = (By.XPATH, "//label[text()='Date of Birth']/../following-sibling::div//input")
 
-    # Save button
-    SAVE_BUTTON = (By.XPATH, "//button[@type='submit']")
+    # Save button (scope to Personal Details card — page has multiple submit buttons)
+    SAVE_BUTTON = (
+        By.XPATH,
+        "//h6[contains(normalize-space(),'Personal Details')]/ancestor::div[contains(@class,'orangehrm-card')][1]"
+        "//button[@type='submit']",
+    )
 
     # Success message
     SUCCESS_TOAST = (By.XPATH, "//p[contains(text(),'Successfully Updated')]")

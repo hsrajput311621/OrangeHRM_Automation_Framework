@@ -1,9 +1,30 @@
 from selenium.webdriver.common.by import By
+from selenium.webdriver.support.wait import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import TimeoutException
 
 from Core.BasePage import BasePage
 from Utils.Logger import logger
+
+_EMPLOYEE_AUTOCOMPLETE_XPATHS = [
+    "//label[contains(.,'Employee Name')]/../following-sibling::div//input",
+    "//label[contains(.,'Employee')]/../following-sibling::div//input",
+    "//div[contains(@class,'oxd-autocomplete-wrapper')]//input",
+    "//input[contains(@placeholder,'Type for hints')]",
+    "//input[contains(@placeholder,'Type')]",
+    "//div[contains(@class,'oxd-form-row')]//input[contains(@class,'oxd-input')]",
+]
+
+
+def _first_visible_input(driver, xpaths):
+    for xp in xpaths:
+        for el in driver.find_elements(By.XPATH, xp):
+            try:
+                if el.is_displayed() and el.is_enabled():
+                    return el
+            except Exception:
+                continue
+    return False
 
 
 class TimePunchPage(BasePage):
@@ -57,32 +78,21 @@ class TimePunchPage(BasePage):
         url = f"{self.config.get_app_base_url()}/time/attendance/punchIn"
         logger.info("Opening Punch In/Out screen: %s", url)
         self.driver.get(url)
+        self.wait_for_no_form_loader()
         try:
             self.wait.until(EC.element_to_be_clickable(self.PUNCH_IN_OR_OUT))
             return
         except TimeoutException:
             logger.info("Punch actions not ready; trying employee selection (proxy punch for admin)")
 
-        employee_inputs = [
-            "//label[contains(.,'Employee Name')]/../following-sibling::div//input",
-            "//label[contains(.,'Employee')]/../following-sibling::div//input",
-            "//div[contains(@class,'oxd-autocomplete-wrapper')]//input[contains(@placeholder,'Type for hints')]",
-            "//input[contains(@placeholder,'Type for hints')]",
-        ]
-        emp_in = None
-        for xp in employee_inputs:
-            loc = (By.XPATH, xp)
-            try:
-                self.wait.until(EC.presence_of_element_located(loc))
-                emp_in = loc
-                break
-            except TimeoutException:
-                continue
-        if emp_in is None:
-            raise TimeoutException("No employee autocomplete input found on punch screen")
-
+        short = WebDriverWait(self.driver, 20)
+        emp_el = short.until(lambda d: _first_visible_input(d, _EMPLOYEE_AUTOCOMPLETE_XPATHS))
         try:
-            self.type(emp_in, "a")
+            try:
+                emp_el.clear()
+            except Exception:
+                pass
+            emp_el.send_keys("a")
             opt = (By.XPATH, "//div[@role='listbox']//div[@role='option'][1]")
             self.wait.until(EC.element_to_be_clickable(opt))
             self.click(opt)

@@ -103,18 +103,18 @@ class AdminAddUserPage(BasePage):
 
     def _visible_password_inputs(self):
         """Add User DOM varies by build; use visible password fields in order (password, confirm)."""
-        els = self.driver.find_elements(
-            By.XPATH,
+        xpaths = [
             "//div[contains(@class,'orangehrm-card-body')]//input[@type='password']",
-        )
-        visible = [e for e in els if e.is_displayed()]
-        if len(visible) >= 2:
-            return visible
-        els = self.driver.find_elements(
-            By.XPATH,
+            "//div[contains(@class,'orangehrm-card')]//input[@type='password']",
+            "//div[contains(@class,'oxd-form')]//input[@type='password']",
             "//form//input[@type='password' and not(@readonly)]",
-        )
-        return [e for e in els if e.is_displayed()]
+        ]
+        for xp in xpaths:
+            els = self.driver.find_elements(By.XPATH, xp)
+            visible = [e for e in els if e.is_displayed()]
+            if len(visible) >= 2:
+                return visible
+        return []
 
     def enter_password(self, text):
         logger.info("Entering password")

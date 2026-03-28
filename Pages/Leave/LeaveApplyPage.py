@@ -46,10 +46,15 @@ class LeaveApplyPage(BasePage):
         "//label[contains(normalize-space(),'Comment')]/../following-sibling::div//textarea"
     )
 
-    # Apply button (scope to leave form so we do not click another module's primary submit)
+    # Apply button (Vue may omit <form>; prefer leave card, then any Apply submit)
     APPLY_BTN = (
         By.XPATH,
-        "//form[.//label[normalize-space()='Leave Type']]//button[@type='submit']",
+        "("
+        "//form[.//label[normalize-space()='Leave Type']]//button[@type='submit'] | "
+        "//div[contains(@class,'orangehrm-card-body')][.//label[normalize-space()='Leave Type']]"
+        "//button[@type='submit'] | "
+        "//button[@type='submit' and contains(normalize-space(.),'Apply')]"
+        ")[1]",
     )
 
     # Success confirmation toast (markup varies by OrangeHRM build)
@@ -76,6 +81,7 @@ class LeaveApplyPage(BasePage):
         url = f"{self.config.get_app_base_url()}/leave/applyLeave"
         logger.info("Opening Apply Leave screen: %s", url)
         self.driver.get(url)
+        self.wait_for_no_form_loader()
         self.wait.until(EC.visibility_of_element_located(self.LEAVE_TYPE_DROPDOWN))
 
     def select_leave_type(self, leave_type):
