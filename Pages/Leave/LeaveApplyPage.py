@@ -1,4 +1,5 @@
 from selenium.webdriver.common.by import By
+from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support import expected_conditions as EC
 
 from Core.BasePage import BasePage
@@ -45,14 +46,18 @@ class LeaveApplyPage(BasePage):
         "//label[contains(normalize-space(),'Comment')]/../following-sibling::div//textarea"
     )
 
-    # Apply button
-    APPLY_BTN = (By.XPATH, "//button[@type='submit']")
+    # Apply button (scope to leave form so we do not click another module's primary submit)
+    APPLY_BTN = (
+        By.XPATH,
+        "//form[.//label[normalize-space()='Leave Type']]//button[@type='submit']",
+    )
 
-    # Success confirmation toast (wording varies by build; toast may use title or body text)
+    # Success confirmation toast (markup varies by OrangeHRM build)
     SUCCESS_TOAST = (
         By.XPATH,
         "//div[contains(@class,'oxd-toast--success')]"
-        "|//div[contains(@class,'oxd-toast-container')]//p["
+        "|//div[contains(@class,'oxd-toast') and contains(@class,'success')]"
+        "|//div[contains(@class,'oxd-toast-container')]//*["
         "contains(.,'Successfully') or contains(.,'Submitted') or contains(.,'success')]",
     )
 
@@ -98,10 +103,12 @@ class LeaveApplyPage(BasePage):
         """
         logger.info(f"Entering From Date: {date_text}")
         self.type(self.FROM_DATE, date_text)
+        self.press_key(self.FROM_DATE, Keys.TAB)
 
     def enter_to_date(self, date_text):
         logger.info(f"Entering To Date: {date_text}")
         self.type(self.TO_DATE, date_text)
+        self.press_key(self.TO_DATE, Keys.TAB)
 
     def enter_comment(self, text):
         logger.info(f"Entering Comment: {text}")
@@ -132,5 +139,5 @@ class LeaveApplyPage(BasePage):
         Check success toast message.
         """
         logger.info("Verifying leave has been submitted successfully")
-        toast = self.wait.until(EC.visibility_of_element_located(self.SUCCESS_TOAST))
+        toast = self.wait.until(EC.presence_of_element_located(self.SUCCESS_TOAST))
         return toast.is_displayed()

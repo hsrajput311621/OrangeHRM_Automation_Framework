@@ -1,7 +1,7 @@
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support import expected_conditions as EC
-from selenium.common.exceptions import TimeoutException
+from selenium.common.exceptions import TimeoutException, StaleElementReferenceException
 
 from Core.BasePage import BasePage
 from Utils.Logger import logger
@@ -108,19 +108,34 @@ class SearchEmployeePage(BasePage):
         - To confirm that the searched employee appears in results.
 
         What happens:
-        - Loop through each row.
-        - Get employee name from row.
-        - If match found → return True.
+        - Re-query cells after Search (table refresh makes row WebElements stale).
         """
         logger.info(f"Validating employee name in search results: {expected_name}")
-        rows = self.get_all_rows()
-        exp = expected_name.lower()
+        exp = expected_name.strip().lower()
+        if not exp:
+            return False
 
-        for row in rows:
-            for cell in row.find_elements(By.XPATH, ".//div[@role='cell']"):
+        trans = "translate(., 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz')"
+        if "'" not in exp:
+            xpath = (
+                "//div[contains(@class,'oxd-table-body')]//div[@role='cell']"
+                f"[contains({trans}, '{exp}')]"
+            )
+            try:
+                self.wait.until(EC.presence_of_element_located((By.XPATH, xpath)))
+                return True
+            except TimeoutException:
+                pass
+
+        cells = self.driver.find_elements(
+            By.XPATH, "//div[contains(@class,'oxd-table-body')]//div[@role='cell']"
+        )
+        for cell in cells:
+            try:
                 if exp in cell.text.strip().lower():
                     return True
-
+            except StaleElementReferenceException:
+                return self.validate_employee_present(expected_name)
         return False
 
     def validate_employee_id_present(self, expected_id):
@@ -129,18 +144,19 @@ class SearchEmployeePage(BasePage):
         - To confirm employee ID appears in table.
 
         What happens:
-        - Loop rows.
-        - Compare ID.
+        - Match exact ID text in any cell without holding stale row references.
         """
         logger.info(f"Validating employee ID in search results: {expected_id}")
-        rows = self.get_all_rows()
-
-        for row in rows:
-            for cell in row.find_elements(By.XPATH, ".//div[@role='cell']"):
-                if cell.text.strip() == expected_id:
-                    return True
-
-        return False
+        eid = str(expected_id).strip()
+        xpath = (
+            "//div[contains(@class,'oxd-table-body')]//div[@role='cell']"
+            f"[normalize-space()='{eid}']"
+        )
+        try:
+            self.wait.until(EC.presence_of_element_located((By.XPATH, xpath)))
+            return True
+        except TimeoutException:
+            return False
 
     # -------------------------------------------------------------
     # HIGH-LEVEL METHOD: Search by name or ID

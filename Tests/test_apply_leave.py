@@ -6,11 +6,8 @@ from Pages.DashboardPage import DashboardPage
 from Pages.Leave.LeaveApplyPage import LeaveApplyPage
 
 
-all_test_data = DataReader.merge_data_files(
-    "TestData/apply_leave.json",
-    "TestData/apply_leave.csv",
-    "TestData/apply_leave.xlsx",
-)
+# Single source avoids triple parametrization (json+csv+xlsx) and stale rows from old .xlsx on agents.
+all_test_data = DataReader.merge_data_files("TestData/apply_leave.json")
 
 
 @pytest.mark.parametrize("row", all_test_data)

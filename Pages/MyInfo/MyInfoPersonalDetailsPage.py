@@ -26,13 +26,13 @@ class MyInfoPersonalDetailsPage(BasePage):
     MIDDLE_NAME = (By.NAME, "middleName")
     LAST_NAME = (By.NAME, "lastName")
 
-    # Personal Details are read-only until Edit is clicked.
-    # Header may use icon-only Edit; target the card that contains the Personal Details heading
+    # Personal Details are read-only until Edit is clicked (text or pencil icon).
     PERSONAL_DETAILS_EDIT = (
         By.XPATH,
-        "//div[contains(@class,'orangehrm-card-header')]"
-        "[.//h6[contains(normalize-space(),'Personal Details')]]"
-        "//button[contains(@class,'oxd-button') or contains(@class,'oxd-icon-button')][1]",
+        "//h6[contains(normalize-space(),'Personal Details')]/ancestor::div[contains(@class,'orangehrm-card')][1]"
+        "//button[contains(@class,'oxd-icon-button') or contains(@class,'oxd-button')][1]"
+        "|//h6[contains(normalize-space(),'Personal Details')]/following::button["
+        "contains(@class,'oxd-icon-button') or normalize-space()='Edit'][1]",
     )
 
     # Nickname (label text can vary slightly by build)

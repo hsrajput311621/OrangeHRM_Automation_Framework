@@ -43,16 +43,6 @@ class AdminAddUserPage(BasePage):
     USERNAME_INPUT = (By.XPATH,
         "//div[contains(@class,'oxd-input-group')][.//label[normalize-space()='Username']]//input"
     )
-    # Label + following password fields (matches OXD layouts where input is not under same oxd-input-group node)
-    PASSWORD_INPUT = (
-        By.XPATH,
-        "//label[normalize-space()='Password']/following::input[@type='password'][1]",
-    )
-    CONFIRM_PASSWORD_INPUT = (
-        By.XPATH,
-        "//label[contains(normalize-space(),'Confirm') and contains(normalize-space(),'Password')]"
-        "/following::input[@type='password'][1]",
-    )
 
     # Save button
     SAVE_BUTTON = (By.XPATH, "//button[@type='submit']")
@@ -111,16 +101,40 @@ class AdminAddUserPage(BasePage):
         logger.info(f"Entering username: {text}")
         self.type(self.USERNAME_INPUT, text)
 
+    def _visible_password_inputs(self):
+        """Add User DOM varies by build; use visible password fields in order (password, confirm)."""
+        els = self.driver.find_elements(
+            By.XPATH,
+            "//div[contains(@class,'orangehrm-card-body')]//input[@type='password']",
+        )
+        visible = [e for e in els if e.is_displayed()]
+        if len(visible) >= 2:
+            return visible
+        els = self.driver.find_elements(
+            By.XPATH,
+            "//form//input[@type='password' and not(@readonly)]",
+        )
+        return [e for e in els if e.is_displayed()]
+
     def enter_password(self, text):
         logger.info("Entering password")
-        el = self.wait.until(EC.presence_of_element_located(self.PASSWORD_INPUT))
+
+        def two_fields(_driver):
+            fields = self._visible_password_inputs()
+            return fields if len(fields) >= 2 else False
+
+        fields = self.wait.until(two_fields)
+        el = fields[0]
         self.highlight(el)
         el.clear()
         el.send_keys(text)
 
     def enter_confirm_password(self, text):
         logger.info("Entering confirm password")
-        el = self.wait.until(EC.presence_of_element_located(self.CONFIRM_PASSWORD_INPUT))
+        fields = self._visible_password_inputs()
+        if len(fields) < 2:
+            raise TimeoutException("Expected two visible password fields on Add User form")
+        el = fields[1]
         self.highlight(el)
         el.clear()
         el.send_keys(text)

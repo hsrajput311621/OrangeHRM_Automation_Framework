@@ -1,4 +1,6 @@
 import os
+import shutil
+import tempfile
 
 from selenium.webdriver.support.wait import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
@@ -189,11 +191,34 @@ class BasePage:
         What happens:
         - Type file path into input[type='file']
         - OrangeHRM hides file inputs (opacity 0); visibility wait never succeeds, so use presence.
+        - On Windows, ChromeDriver often fails when the path contains spaces; copy to TEMP first.
         """
         path = os.path.abspath(os.path.normpath(file_path))
-        element = self.wait.until(EC.presence_of_element_located(locator))
-        self.highlight(element)
-        element.send_keys(path)
+        if not os.path.isfile(path):
+            raise FileNotFoundError(
+                f"Upload file missing: {path}. "
+                "Commit TestData assets or run tests from a repo where pytest_sessionstart can create them."
+            )
+
+        upload_path = path
+        tmp_copy = None
+        if os.name == "nt" and " " in path:
+            suffix = os.path.splitext(path)[1] or ".bin"
+            fd, tmp_copy = tempfile.mkstemp(prefix="ohrm_upload_", suffix=suffix)
+            os.close(fd)
+            shutil.copy2(path, tmp_copy)
+            upload_path = tmp_copy
+
+        try:
+            element = self.wait.until(EC.presence_of_element_located(locator))
+            self.highlight(element)
+            element.send_keys(upload_path)
+        finally:
+            if tmp_copy and os.path.isfile(tmp_copy):
+                try:
+                    os.remove(tmp_copy)
+                except OSError:
+                    pass
 
     # ----------------------------------------------------------------
     # SWITCH TO FRAME

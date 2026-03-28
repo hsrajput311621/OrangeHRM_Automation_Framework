@@ -16,6 +16,16 @@ import pytest
 from Core.ConfigLoader import ConfigLoader
 from Core.DriverManager import DriverManager
 from Utils.Logger import logger
+from Utils.test_upload_assets import ensure_test_upload_files
+
+
+def pytest_sessionstart(session):
+    """
+    Jenkins/Git clones may omit binary fixtures; Chrome also rejects some paths with spaces.
+    Ensure minimal resume.pdf / photo.png exist under TestData/ before any test runs.
+    """
+    root = Path(__file__).resolve().parent
+    ensure_test_upload_files(root / "TestData")
 
 
 # -------------------------------------------------------

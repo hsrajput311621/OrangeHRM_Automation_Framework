@@ -63,10 +63,24 @@ class TimePunchPage(BasePage):
         except TimeoutException:
             logger.info("Punch actions not ready; trying employee selection (proxy punch for admin)")
 
-        emp_in = (
-            By.XPATH,
+        employee_inputs = [
             "//label[contains(.,'Employee Name')]/../following-sibling::div//input",
-        )
+            "//label[contains(.,'Employee')]/../following-sibling::div//input",
+            "//div[contains(@class,'oxd-autocomplete-wrapper')]//input[contains(@placeholder,'Type for hints')]",
+            "//input[contains(@placeholder,'Type for hints')]",
+        ]
+        emp_in = None
+        for xp in employee_inputs:
+            loc = (By.XPATH, xp)
+            try:
+                self.wait.until(EC.presence_of_element_located(loc))
+                emp_in = loc
+                break
+            except TimeoutException:
+                continue
+        if emp_in is None:
+            raise TimeoutException("No employee autocomplete input found on punch screen")
+
         try:
             self.type(emp_in, "a")
             opt = (By.XPATH, "//div[@role='listbox']//div[@role='option'][1]")
