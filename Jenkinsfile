@@ -4,7 +4,9 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
-                git 'https://github.com/your-username/OrangeHRM_Automation.git'
+                git 'https://github.com/hsrajput311621/OrangeHRM_Automation_Framework.git'
+
+
             }
         }
 
