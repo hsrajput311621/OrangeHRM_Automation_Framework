@@ -1,0 +1,30 @@
+name: OrangeHRM Automation CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  build-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Install Python
+        uses: actions/setup-python@v3
+        with:
+          python-version: "3.10"
+
+      - name: Install Dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run UI Tests
+        run: pytest Tests/ --alluredir=Reports/allure-results
+
+      - name: Run API Tests
+        run: pytest TestsAPI/ --alluredir=Reports/allure-api-results
+
+      - name: Run Performance Tests (Locust)
+        run: locust -f Performance/Locust/locustfile.py --headless -u 10 -r 2 -t 20s

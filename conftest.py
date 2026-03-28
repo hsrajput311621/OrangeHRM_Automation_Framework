@@ -1,0 +1,115 @@
+import os
+import pytest
+import allure
+from datetime import datetime
+from pathlib import Path
+
+from Core.ConfigLoader import ConfigLoader
+from Core.DriverManager import DriverManager
+from Utils.Logger import logger
+
+
+# -------------------------------------------------------
+# FIXTURE: LOAD CONFIG ONCE
+# -------------------------------------------------------
+@pytest.fixture(scope="session")
+def config():
+    """
+    Why:
+    - Load config.json and .env only ONCE for entire test session.
+    - Faster + simple + clean.
+
+    What happens:
+    - Create ConfigLoader instance and share it with all fixtures/tests.
+    """
+    return ConfigLoader()
+
+
+# -------------------------------------------------------
+# FIXTURE: CREATE DRIVER FOR EACH TEST
+# -------------------------------------------------------
+@pytest.fixture()
+def driver(config):
+    """
+    Why:
+    - Create a fresh browser for each test.
+    - Avoids test dependency.
+
+    What happens:
+    - Start Chrome using DriverManager.
+    - Yield driver to the test.
+    - After test finishes → close browser.
+    """
+    manager = DriverManager(config)
+    driver = manager.get_driver()
+
+    yield driver  # provide driver to test
+
+    logger.info("Closing browser after test...")
+    manager.quit_driver()
+
+
+# -------------------------------------------------------
+# PYTEST HOOK: CAPTURE SCREENSHOT ON FAILURE
+# -------------------------------------------------------
+@pytest.hookimpl(hookwrapper=True)
+def pytest_runtest_makereport(item):
+    """
+    Why:
+    - Detect when a test fails.
+    - Capture screenshot.
+    - Save screenshot to Screenshots/.
+    - Attach screenshot to Allure report.
+
+    What happens:
+    - After each test, check its result.
+    - If FAILED → capture screenshot.
+    """
+    outcome = yield
+    report = outcome.get_result()
+
+    if report.when == "call" and report.failed:
+        driver = item.funcargs.get("driver")
+        config = item.funcargs.get("config")
+
+        if driver is None:
+            return  # test had no driver fixture
+
+        # ---------------------------------------------------
+        # Prepare screenshot folder
+        # ---------------------------------------------------
+        screenshot_folder = Path(config.get_path("screenshots"))
+        screenshot_folder.mkdir(exist_ok=True)
+
+        # ---------------------------------------------------
+        # Prepare screenshot file name (Option A)
+        # Example: test_login_2026-03-27_12-30-10.png
+        # ---------------------------------------------------
+        test_name = item.name
+        timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+        screenshot_name = f"{test_name}_{timestamp}.png"
+
+        screenshot_path = screenshot_folder / screenshot_name
+
+        # ---------------------------------------------------
+        # Take screenshot
+        # ---------------------------------------------------
+        try:
+            driver.save_screenshot(str(screenshot_path))
+            logger.error(f"Screenshot saved: {screenshot_path}")
+
+            # Attach screenshot to Allure report
+            allure.attach.file(
+                str(screenshot_path),
+                name=screenshot_name,
+                attachment_type=allure.attachment_type.PNG
+            )
+
+        except Exception as exc:
+            logger.error(f"Failed to take screenshot: {exc}")
+
+@pytest.fixture(scope="session")
+def api_client():
+    from API.client import APIClient
+    from API.endpoints import BASE_API
+    return APIClient(BASE_API)

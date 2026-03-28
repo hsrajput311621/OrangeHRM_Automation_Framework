@@ -1,0 +1,27 @@
+{
+  "base_url" : "ttps://opensource-demo.orangehrmlive.com/web/index.php/auth/login",
+  "browser" : "chrome",
+  "headless" : false,
+  "incognito" : true,
+  "disable_notifications" : true,
+  "start_maximized" : true,
+
+  "timeouts" : {
+    "implicit_wait" : 0,
+    "explicit_wait" : 10,
+    "page_log-timeout" : 20
+  },
+  "retry_faied_tests" : 1,
+
+  "paths": {
+    "screenshots" : "Screenshots/",
+    "logs": "Logs/",
+    "reports": "Reports/",
+    "test_data": "TestData/"
+  },
+
+  "highlight_elements": true,
+  "slow_motion": 0,
+  "enable_html_report": true,
+  "enable_allure_report": true
+}
