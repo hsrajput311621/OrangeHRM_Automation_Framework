@@ -2,41 +2,42 @@ pipeline {
     agent any
 
     stages {
+
         stage('Checkout') {
             steps {
-                git 'https://github.com/hsrajput311621/OrangeHRM_Automation_Framework.git'
-
-
+                git branch: 'main',
+                    credentialsId: 'github-creds',
+                    url: 'https://github.com/hsrajput311621/OrangeHRM_Automation_Framework.git'
             }
         }
 
         stage('Install Dependencies') {
             steps {
-                sh 'pip install -r requirements.txt'
+                bat 'pip install -r requirements.txt'
             }
         }
 
         stage('Run UI Tests') {
             steps {
-                sh 'pytest Tests/ --alluredir=Reports/allure-results'
+                bat 'pytest Tests/ --alluredir=Reports/allure-results'
             }
         }
 
         stage('Run API Tests') {
             steps {
-                sh 'pytest TestsAPI/ --alluredir=Reports/allure-api-results'
+                bat 'pytest TestsAPI/ --alluredir=Reports/allure-api-results'
             }
         }
 
         stage('Run Performance Tests') {
             steps {
-                sh 'locust -f Performance/Locust/locustfile.py --headless -u 10 -r 2 -t 30s'
+                bat 'locust -f Performance/Locust/locustfile.py --headless -u 10 -r 2 -t 30s'
             }
         }
 
         stage('Generate Allure Report') {
             steps {
-                sh 'allure generate Reports/allure-results -o Reports/allure-report --clean'
+                bat 'allure generate Reports/allure-results -o Reports/allure-report --clean'
             }
         }
     }
