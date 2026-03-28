@@ -83,10 +83,6 @@ class DriverManager:
 
         # IMPORTANT: You selected implicit_wait = 0 (modern best practice)
         self.driver.implicitly_wait(self.config.get_timeout("implicit_wait"))
-
-        # Page load timeout
-        self.driver.set_page_load_timeout(self.config.get_timeout("page_load_timeout"))
-
         return self.driver
 
     def quit_driver(self):
