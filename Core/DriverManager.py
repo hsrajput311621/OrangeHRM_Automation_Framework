@@ -71,10 +71,7 @@ class DriverManager:
         # --------------------------------------------------------
 
         try:
-            self.driver = webdriver.Chrome(
-                service=Service(ChromeDriverManager().install()),
-                options=chrome_options
-            )
+            self.driver = webdriver.Chrome(options=chrome_options)
         except Exception as exc:
             raise Exception(f"Error launching Chrome browser: {exc}")
 
