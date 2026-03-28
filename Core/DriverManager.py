@@ -45,13 +45,17 @@ class DriverManager:
         chrome_options = Options()
 
         # --- Browser behaviour from config.json + CI ---
-        # Headless: no GUI. We turn it on when config says so, or on CI (GitHub Actions /
-        # many Jenkins Linux agents) where there is no physical display for Chrome.
+        # Headless: no GUI. Turn on from config, or when CI/GitHub/Jenkins env is set.
+        # Jenkins agents often have no logged-in desktop; headed Chrome is unreliable there.
         use_headless = bool(self.config.get("headless"))
         if os.getenv("CI") == "true" or os.getenv("GITHUB_ACTIONS") == "true":
             use_headless = True
+        if os.getenv("JENKINS_URL"):
+            use_headless = True
         if use_headless:
             chrome_options.add_argument("--headless=new")
+            # Headless default viewport is small; OrangeHRM hides/collapses the sidebar → menu XPaths time out.
+            chrome_options.add_argument("--window-size=1920,1080")
 
         # Private mode: clean session, fewer extensions interfering with tests.
         if self.config.get("incognito"):
@@ -60,14 +64,19 @@ class DriverManager:
         if self.config.get("disable_notifications"):
             chrome_options.add_argument("--disable-notifications")
 
-        if self.config.get("start_maximized"):
+        if self.config.get("start_maximized") and not use_headless:
             chrome_options.add_argument("--start-maximized")
+
+        # Large viewport on Jenkins even if someone turns headless off (service sessions are often 800×600).
+        if os.getenv("JENKINS_URL") and not use_headless:
+            chrome_options.add_argument("--window-size=1920,1080")
 
         # Jenkins / Docker / many Linux agents: Chrome needs these or it crashes
         # (sandbox and /dev/shm issues). Safe to keep on Windows too.
         if os.getenv("CI") == "true" or os.getenv("JENKINS_URL"):
             chrome_options.add_argument("--no-sandbox")
             chrome_options.add_argument("--disable-dev-shm-usage")
+            chrome_options.add_argument("--disable-gpu")
 
         # Makes automation slightly less obvious to some sites (not security-relevant).
         chrome_options.add_experimental_option("excludeSwitches", ["enable-automation"])

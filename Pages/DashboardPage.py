@@ -1,4 +1,6 @@
 from selenium.webdriver.common.by import By
+from selenium.webdriver.support import expected_conditions as EC
+
 from Core.BasePage import BasePage
 from Utils.Logger import logger
 
@@ -17,7 +19,7 @@ class DashboardPage(BasePage):
     """
 
     # -------------------------------------------------------------
-    # PAGEELEMENT LOCATORS (PageFactory style)
+    # PAGE ELEMENT LOCATORS (PageFactory style)
     # -------------------------------------------------------------
 
     # Dashboard main heading (used to confirm login success)
@@ -28,15 +30,6 @@ class DashboardPage(BasePage):
 
     # Logout link inside dropdown
     LOGOUT_BUTTON = (By.XPATH, "//a[text()='Logout']")
-
-    # Menu options (Admin, PIM, Leave, etc.)
-    MENU_ADMIN = (By.XPATH, "//span[text()='Admin']")
-    MENU_PIM = (By.XPATH, "//span[text()='PIM']")
-    MENU_LEAVE = (By.XPATH, "//span[text()='Leave']")
-    MENU_TIME = (By.XPATH, "//span[text()='Time']")
-    MENU_RECRUITMENT = (By.XPATH, "//span[text()='Recruitment']")
-    MENU_BUZZ = (By.XPATH, "//span[text()='Buzz']")
-    MENU_MYINFO = (By.XPATH, "//span[text()='My Info']")
 
     # -------------------------------------------------------------
     # METHODS (actions for the Dashboard)
@@ -80,33 +73,52 @@ class DashboardPage(BasePage):
         self.click(self.LOGOUT_BUTTON)
 
     # -------------------------------------------------------------
-    # NAVIGATION METHODS (used in other Test Cases)
+    # SIDEBAR NAVIGATION (OrangeHRM 5.x)
     # -------------------------------------------------------------
+    def _click_left_menu(self, label: str):
+        """
+        Why not //span[text()='PIM'] alone:
+        - OrangeHRM wraps each module in <a class="oxd-main-menu-item">.
+        - Spans can have whitespace; normalize-space() avoids flaky exact matches.
+        - In headless/small windows the link can be off-screen; we scroll it into view first.
+
+        What happens:
+        1) Find the sidebar <a> whose descendant span text matches `label`.
+        2) Scroll it to the center of the viewport.
+        3) Wait until clickable, then click.
+        """
+        xpath = (
+            "//a[contains(@class,'oxd-main-menu-item')]"
+            f"[.//span[normalize-space()='{label}']]"
+        )
+        locator = (By.XPATH, xpath)
+        logger.info(f"Opening left menu: {label}")
+        element = self.wait.until(EC.presence_of_element_located(locator))
+        self.driver.execute_script(
+            "arguments[0].scrollIntoView({block:'center', inline:'nearest'});",
+            element,
+        )
+        element = self.wait.until(EC.element_to_be_clickable(locator))
+        self.highlight(element)
+        element.click()
 
     def go_to_admin(self):
-        logger.info("Navigating to Admin module")
-        self.click(self.MENU_ADMIN)
+        self._click_left_menu("Admin")
 
     def go_to_pim(self):
-        logger.info("Navigating to PIM module")
-        self.click(self.MENU_PIM)
+        self._click_left_menu("PIM")
 
     def go_to_leave(self):
-        logger.info("Navigating to Leave module")
-        self.click(self.MENU_LEAVE)
+        self._click_left_menu("Leave")
 
     def go_to_time(self):
-        logger.info("Navigating to Time module")
-        self.click(self.MENU_TIME)
+        self._click_left_menu("Time")
 
     def go_to_recruitment(self):
-        logger.info("Navigating to Recruitment module")
-        self.click(self.MENU_RECRUITMENT)
+        self._click_left_menu("Recruitment")
 
     def go_to_buzz(self):
-        logger.info("Navigating to Buzz module")
-        self.click(self.MENU_BUZZ)
+        self._click_left_menu("Buzz")
 
     def go_to_my_info(self):
-        logger.info("Navigating to My Info module")
-        self.click(self.MENU_MYINFO)
+        self._click_left_menu("My Info")

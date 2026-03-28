@@ -51,6 +51,8 @@ pipeline {
         VENV_DIR    = ".venv"
         REPORTS_DIR = "Reports"
         SCREEN_DIR  = "Screenshots"
+        // Selenium reads this → headless Chrome + stable flags in DriverManager.java
+        CI = "true"
     }
 
     stages {
@@ -61,12 +63,19 @@ pipeline {
             }
         }
 
+        // Windows: use "py -3" launcher first; fall back to "python" if the launcher is missing.
+        // Optional: define env var PYTHON_EXE as full path to python.exe in the Jenkins job.
         stage('Set up Python venv') {
             steps {
                 bat """
-                    python -m venv ${VENV_DIR}
-                    ${VENV_DIR}\\Scripts\\pip install --upgrade pip
-                    ${VENV_DIR}\\Scripts\\pip install -r requirements.txt
+                    if defined PYTHON_EXE (
+                      "%PYTHON_EXE%" -m venv ${VENV_DIR}
+                    ) else (
+                      py -3 -m venv ${VENV_DIR}
+                      if errorlevel 1 python -m venv ${VENV_DIR}
+                    )
+                    call ${VENV_DIR}\\Scripts\\python.exe -m pip install --upgrade pip
+                    call ${VENV_DIR}\\Scripts\\python.exe -m pip install -r requirements.txt
                 """
             }
         }
