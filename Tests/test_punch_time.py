@@ -52,18 +52,14 @@ def test_punch_time(row, driver, config):
     assert dashboard.verify_login_success(), "Login failed. Cannot punch time."
 
     # ------------------------------------------------
-    # 3. NAVIGATE TO TIME MODULE
+    # 3. GET DATA (Punch screen opened inside punch_in / punch_out)
     # ------------------------------------------------
-    dashboard.go_to_time()
-
-    # ------------------------------------------------
-    # 4. GET DATA
     # ------------------------------------------------
     punch_in_comment = row["punch_in_comment"]
     punch_out_comment = row["punch_out_comment"]
 
     # ------------------------------------------------
-    # 5. PUNCH IN
+    # 4. PUNCH IN
     # ------------------------------------------------
     punch_page.punch_in(comment=punch_in_comment)
 
@@ -74,7 +70,7 @@ def test_punch_time(row, driver, config):
     print(f"Punched In at: {punch_in_time}")
 
     # ------------------------------------------------
-    # 6. PUNCH OUT
+    # 5. PUNCH OUT
     # ------------------------------------------------
     punch_page.punch_out(comment=punch_out_comment)
 

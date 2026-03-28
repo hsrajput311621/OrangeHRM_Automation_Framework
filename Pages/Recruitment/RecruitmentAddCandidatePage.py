@@ -1,4 +1,6 @@
 from selenium.webdriver.common.by import By
+from selenium.webdriver.support import expected_conditions as EC
+
 from Core.BasePage import BasePage
 from Utils.Logger import logger
 
@@ -62,6 +64,20 @@ class RecruitmentAddCandidatePage(BasePage):
     # -------------------------------------------------------------
     # PAGE ACTIONS
     # -------------------------------------------------------------
+
+    def open_add_candidate(self):
+        """
+        Why:
+        - Clicking only 'Recruitment' opens the module default (often dashboard), not the form.
+        - Direct route is stable in CI/Jenkins and matches OrangeHRM routing.
+
+        What happens:
+        - Browser goes to .../web/index.php/recruitment/addCandidate and waits for the form.
+        """
+        url = f"{self.config.get_app_base_url()}/recruitment/addCandidate"
+        logger.info("Opening Add Candidate screen: %s", url)
+        self.driver.get(url)
+        self.wait.until(EC.visibility_of_element_located(self.FIRST_NAME))
 
     def enter_first_name(self, text):
         logger.info(f"Entering first name: {text}")

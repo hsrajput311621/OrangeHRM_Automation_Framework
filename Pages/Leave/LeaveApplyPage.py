@@ -1,4 +1,6 @@
 from selenium.webdriver.common.by import By
+from selenium.webdriver.support import expected_conditions as EC
+
 from Core.BasePage import BasePage
 from Utils.Logger import logger
 
@@ -38,9 +40,9 @@ class LeaveApplyPage(BasePage):
         "//label[text()='To Date']/../following-sibling::div//input"
     )
 
-    # Comment box
+    # Comment box (UI may say 'Comment' or 'Comments')
     COMMENT_BOX = (By.XPATH,
-        "//label[text()='Comments']/../following-sibling::div//textarea"
+        "//label[contains(normalize-space(),'Comment')]/../following-sibling::div//textarea"
     )
 
     # Apply button
@@ -52,6 +54,19 @@ class LeaveApplyPage(BasePage):
     # -------------------------------------------------------------
     # PAGE ACTIONS
     # -------------------------------------------------------------
+
+    def open_apply_leave(self):
+        """
+        Why:
+        - Leave module default is not always the Apply screen (e.g. Leave List).
+
+        What happens:
+        - Open .../web/index.php/leave/applyLeave and wait for Leave Type dropdown.
+        """
+        url = f"{self.config.get_app_base_url()}/leave/applyLeave"
+        logger.info("Opening Apply Leave screen: %s", url)
+        self.driver.get(url)
+        self.wait.until(EC.visibility_of_element_located(self.LEAVE_TYPE_DROPDOWN))
 
     def select_leave_type(self, leave_type):
         """
@@ -100,6 +115,7 @@ class LeaveApplyPage(BasePage):
         """
         logger.info("Performing full Leave Apply action")
 
+        self.open_apply_leave()
         self.select_leave_type(leave_type)
         self.enter_from_date(from_date)
         self.enter_to_date(to_date)

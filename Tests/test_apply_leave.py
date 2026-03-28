@@ -52,12 +52,8 @@ def test_apply_leave(row, driver, config):
     assert dashboard.verify_login_success(), "Login failed. Cannot apply leave."
 
     # ------------------------------------------------
-    # 3. GO TO LEAVE MODULE
+    # 3. GET DATA FROM CURRENT ROW (Apply screen opened inside apply_leave)
     # ------------------------------------------------
-    dashboard.go_to_leave()
-
-    # ------------------------------------------------
-    # 4. GET DATA FROM CURRENT ROW
     # ------------------------------------------------
     leave_type = row["leave_type"]        # Example: "CAN - Personal"
     from_date = row["from_date"]          # Example: "2026-03-28"
@@ -65,7 +61,7 @@ def test_apply_leave(row, driver, config):
     comment = row["comment"]              # Any comment message
 
     # ------------------------------------------------
-    # 5. APPLY LEAVE
+    # 4. APPLY LEAVE
     # ------------------------------------------------
     leave_page.apply_leave(
         leave_type=leave_type,

@@ -6,10 +6,12 @@ from Pages.DashboardPage import DashboardPage
 from Pages.Recruitment.RecruitmentAddCandidatePage import RecruitmentAddCandidatePage
 
 
+# require_keys drops Excel template rows (Column Name / Example Value) from parametrization.
 all_test_data = DataReader.merge_data_files(
     "TestData/add_candidate.json",
     "TestData/add_candidate.csv",
     "TestData/add_candidate.xlsx",
+    require_keys=("first_name", "middle_name", "last_name", "email"),
 )
 
 
@@ -53,12 +55,9 @@ def test_add_candidate(row, driver, config):
     assert dashboard.verify_login_success(), "Login failed. Cannot add candidate."
 
     # ---------------------------------------------------------
-    # 3. NAVIGATE TO RECRUITMENT → ADD CANDIDATE
+    # 3. OPEN ADD CANDIDATE (direct route — sidebar default is not this form)
     # ---------------------------------------------------------
-    dashboard.go_to_recruitment()
-
-    # There is an 'Add' button on Recruitment page
-    # We will click it using RecruitmentAddCandidatePage high-level flow
+    candidate_page.open_add_candidate()
 
     # ---------------------------------------------------------
     # 4. READ TEST DATA

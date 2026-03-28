@@ -1,4 +1,6 @@
 from selenium.webdriver.common.by import By
+from selenium.webdriver.support import expected_conditions as EC
+
 from Core.BasePage import BasePage
 from Utils.Logger import logger
 
@@ -53,6 +55,19 @@ class AddEmployeePage(BasePage):
     # -------------------------------------------------------------
     # PAGE ACTIONS
     # -------------------------------------------------------------
+
+    def open_add_employee(self):
+        """
+        Why:
+        - PIM opens on Employee List; firstName fields exist only on Add Employee.
+
+        What happens:
+        - Navigate to .../web/index.php/pim/addEmployee and wait for the form.
+        """
+        url = f"{self.config.get_app_base_url()}/pim/addEmployee"
+        logger.info("Opening Add Employee screen: %s", url)
+        self.driver.get(url)
+        self.wait.until(EC.visibility_of_element_located(self.FIRST_NAME))
 
     def enter_first_name(self, name):
         logger.info(f"Entering first name: {name}")

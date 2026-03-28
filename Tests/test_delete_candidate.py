@@ -30,11 +30,11 @@ def test_delete_candidate(driver, config):
     login.login(config.username, config.password)
     assert dashboard.verify_login_success(), "Login failed"
 
-    # 3. Go to Recruitment module
-    dashboard.go_to_recruitment()
+    # 3. Open Candidates list (Recruitment default is not always this grid)
+    candidates_page.open_view_candidates()
 
-    # Candidate name to delete
-    candidate_name = "John Smith"   # You can make it data-driven later
+    # Matches add_candidate test data (John / A / Smith); search by last name is enough.
+    candidate_name = "Smith"
 
     # 4. Search candidate
     candidates_page.search_candidate(candidate_name)

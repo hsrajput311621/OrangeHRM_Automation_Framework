@@ -109,3 +109,16 @@ class ConfigLoader:
     def get_path(self, key: str):
         """Return a folder path string from `paths` (e.g. screenshots, logs)."""
         return self.config["paths"].get(key)
+
+    def get_app_base_url(self) -> str:
+        """
+        OrangeHRM screens are routed under /web/index.php/<module>/... .
+        config.json often sets base_url to the login page; strip it back to /web/index.php
+        so page objects can open routes like .../recruitment/addCandidate reliably
+        (avoids relying on sidebar default sub-pages after PIM/Leave/Time clicks).
+        """
+        u = (self.config.get("base_url") or "").rstrip("/")
+        needle = "/web/index.php"
+        if needle in u:
+            return u[: u.index(needle) + len(needle)]
+        return u

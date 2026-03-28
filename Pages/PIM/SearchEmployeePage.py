@@ -101,11 +101,12 @@ class SearchEmployeePage(BasePage):
         """
         logger.info(f"Validating employee name in search results: {expected_name}")
         rows = self.get_all_rows()
+        exp = expected_name.lower()
 
         for row in rows:
-            name = row.find_element(*self.TABLE_EMP_NAME).text.strip()
-            if expected_name.lower() in name.lower():
-                return True
+            for cell in row.find_elements(By.XPATH, ".//div[@role='cell']"):
+                if exp in cell.text.strip().lower():
+                    return True
 
         return False
 

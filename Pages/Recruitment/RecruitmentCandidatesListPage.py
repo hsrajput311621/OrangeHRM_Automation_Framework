@@ -1,4 +1,6 @@
 from selenium.webdriver.common.by import By
+from selenium.webdriver.support import expected_conditions as EC
+
 from Core.BasePage import BasePage
 from Utils.Logger import logger
 
@@ -36,6 +38,19 @@ class RecruitmentCandidatesListPage(BasePage):
     # ---------------------------------------------------------
     # Methods
     # ---------------------------------------------------------
+
+    def open_view_candidates(self):
+        """
+        Why:
+        - Recruitment default view may not be the Candidates list (search + grid).
+
+        What happens:
+        - Open the standard Candidates list route used by the app.
+        """
+        url = f"{self.config.get_app_base_url()}/recruitment/viewCandidates"
+        logger.info("Opening Candidates list: %s", url)
+        self.driver.get(url)
+        self.wait.until(EC.visibility_of_element_located(self.SEARCH_NAME))
 
     def search_candidate(self, name):
         logger.info(f"Searching candidate: {name}")

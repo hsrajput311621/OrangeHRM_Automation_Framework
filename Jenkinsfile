@@ -67,12 +67,18 @@ pipeline {
         // Optional: define env var PYTHON_EXE as full path to python.exe in the Jenkins job.
         stage('Set up Python venv') {
             steps {
+                // If the job defines PYTHON_EXE as an empty string, "if defined PYTHON_EXE" is still
+                // true and cmd runs "" -m venv. Only use PYTHON_EXE when it is non-empty.
                 bat """
-                    if defined PYTHON_EXE (
+                    if not "%PYTHON_EXE%"=="" (
                       "%PYTHON_EXE%" -m venv ${VENV_DIR}
                     ) else (
                       py -3 -m venv ${VENV_DIR}
                       if errorlevel 1 python -m venv ${VENV_DIR}
+                    )
+                    if not exist ${VENV_DIR}\\Scripts\\python.exe (
+                      echo ERROR: Could not create venv. Install Python 3, add py/python to PATH, or set PYTHON_EXE to python.exe
+                      exit /b 1
                     )
                     call ${VENV_DIR}\\Scripts\\python.exe -m pip install --upgrade pip
                     call ${VENV_DIR}\\Scripts\\python.exe -m pip install -r requirements.txt

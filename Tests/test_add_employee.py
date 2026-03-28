@@ -42,13 +42,10 @@ def test_add_employee(row, driver, config):
     login.login(config.username, config.password)
     assert dashboard.verify_login_success(), "Login failed. Cannot add employee."
 
-    # Step 3: Navigate to PIM module
-    dashboard.go_to_pim()
+    # Step 3: Open Add Employee (PIM defaults to Employee List, not this form)
+    add_emp.open_add_employee()
 
-    # Step 4: Click Add Employee button (OrangeHRM opens Add Employee by default)
-    # If needed, you can add extra click actions here.
-
-    # Step 5: Extract data from row
+    # Step 4: Extract data from row
     first = row["first_name"]
     middle = row["middle_name"]
     last = row["last_name"]
@@ -56,7 +53,7 @@ def test_add_employee(row, driver, config):
     dob = row["dob"]  # yyyy-mm-dd
     photo = row.get("photo_path")  # optional field
 
-    # Step 6: Fill form
+    # Step 5: Fill form
     add_emp.enter_first_name(first)
     add_emp.enter_middle_name(middle)
     add_emp.enter_last_name(last)
@@ -67,7 +64,7 @@ def test_add_employee(row, driver, config):
 
     add_emp.enter_dob(dob)
 
-    # Step 7: Save
+    # Step 6: Save
     add_emp.click_save()
 
     # Step 8: Validation

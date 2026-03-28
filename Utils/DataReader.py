@@ -34,15 +34,18 @@ class DataReader:
         logger.info(f"DataReader initialized for file: {self.file_path}")
 
     @classmethod
-    def merge_data_files(cls, *relative_paths: str) -> list:
+    def merge_data_files(cls, *relative_paths: str, require_keys: tuple = ()) -> list:
         """
         Why:
         - Many tests want JSON + CSV + (optionally) Excel in one list.
         - Excel files are often omitted from Git/Jenkins; missing .xlsx must not crash collection.
+        - Some .xlsx sheets are documentation rows (e.g. Column Name / Example Value) — those
+          must not become pytest parameters (use require_keys=('first_name',) etc.).
 
         What happens:
         - For each path: if the file exists, read it with DataReader and extend a combined list.
         - If missing, log a warning and skip (so pytest --collect-only works everywhere).
+        - If require_keys is set, only append rows that contain every listed key.
         """
         combined: list = []
         for rel in relative_paths:
@@ -50,7 +53,10 @@ class DataReader:
             if not path.is_file():
                 logger.warning("Optional test data file missing, skipping: %s", path)
                 continue
-            combined.extend(cls(str(path)).get_data())
+            for row in cls(str(path)).get_data():
+                if require_keys and not all(k in row for k in require_keys):
+                    continue
+                combined.append(row)
         return combined
 
     # -------------------------------------------------------

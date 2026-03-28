@@ -36,10 +36,16 @@ class AdminAddUserPage(BasePage):
     EMPLOYEE_NAME_INPUT = (By.XPATH, "//label[text()='Employee Name']/../following-sibling::div//input")
     EMPLOYEE_SUGGESTION = (By.XPATH, "//div[@role='option']")
 
-    # Username & password fields
-    USERNAME_INPUT = (By.XPATH, "//label[text()='Username']/../following-sibling::div//input")
-    PASSWORD_INPUT = (By.XPATH, "//label[text()='Password']/../following-sibling::div//input")
-    CONFIRM_PASSWORD_INPUT = (By.XPATH, "//label[text()='Confirm Password']/../following-sibling::div//input")
+    # Username & password fields (oxd layout: label + slot wrapper — avoid brittle ../following)
+    USERNAME_INPUT = (By.XPATH,
+        "//div[contains(@class,'oxd-input-group')][.//label[normalize-space()='Username']]//input"
+    )
+    PASSWORD_INPUT = (By.XPATH,
+        "//div[contains(@class,'oxd-input-group')][.//label[normalize-space()='Password']]//input[@type='password']"
+    )
+    CONFIRM_PASSWORD_INPUT = (By.XPATH,
+        "//div[contains(@class,'oxd-input-group')][.//label[normalize-space()='Confirm Password']]//input[@type='password']"
+    )
 
     # Save button
     SAVE_BUTTON = (By.XPATH, "//button[@type='submit']")
@@ -92,10 +98,12 @@ class AdminAddUserPage(BasePage):
 
     def enter_password(self, text):
         logger.info("Entering password")
+        self.scroll_to(self.PASSWORD_INPUT)
         self.type(self.PASSWORD_INPUT, text)
 
     def enter_confirm_password(self, text):
         logger.info("Entering confirm password")
+        self.scroll_to(self.CONFIRM_PASSWORD_INPUT)
         self.type(self.CONFIRM_PASSWORD_INPUT, text)
 
     def click_save(self):

@@ -26,8 +26,18 @@ class MyInfoPersonalDetailsPage(BasePage):
     MIDDLE_NAME = (By.NAME, "middleName")
     LAST_NAME = (By.NAME, "lastName")
 
-    # Nickname
-    NICKNAME = (By.XPATH, "//label[text()='Nickname']/../following-sibling::div//input")
+    # Personal Details are read-only until Edit is clicked.
+    PERSONAL_DETAILS_EDIT = (
+        By.XPATH,
+        "//div[contains(@class,'orangehrm-horizontal-padding')]"
+        "[.//h6[normalize-space()='Personal Details']]//button[normalize-space()='Edit']",
+    )
+
+    # Nickname (label text can vary slightly by build)
+    NICKNAME = (
+        By.XPATH,
+        "//label[contains(normalize-space(),'Nick')]/../following-sibling::div//input",
+    )
 
     # Employee ID
     EMPLOYEE_ID = (By.XPATH, "//label[text()='Employee Id']/../following-sibling::div//input")
@@ -59,6 +69,10 @@ class MyInfoPersonalDetailsPage(BasePage):
     # -------------------------------------------------------------
     # PAGE ACTIONS
     # -------------------------------------------------------------
+
+    def click_edit_personal_details(self):
+        logger.info("Clicking Edit on Personal Details section")
+        self.click(self.PERSONAL_DETAILS_EDIT)
 
     def enter_first_name(self, text):
         logger.info(f"Entering first name: {text}")
@@ -126,6 +140,7 @@ class MyInfoPersonalDetailsPage(BasePage):
     ):
         logger.info("Running full 'Update Personal Details' workflow")
 
+        self.click_edit_personal_details()
         self.enter_first_name(first)
         self.enter_middle_name(middle)
         self.enter_last_name(last)
