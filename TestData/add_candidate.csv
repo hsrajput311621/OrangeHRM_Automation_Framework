@@ -1,0 +1,2 @@
+first_name,middle_name,last_name,email,contact_number,vacancy,resume_path,keywords,notes,date_of_application
+John,A,Smith,john.smith@example.com,9876543210,Software Engineer,TestData/resume.pdf,"Selenium, Python","Good automation experience",2026-03-28

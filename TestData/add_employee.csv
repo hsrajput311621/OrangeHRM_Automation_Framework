@@ -1,0 +1,2 @@
+first_name,middle_name,last_name,employee_id,dob,photo_path
+John,A,Doe,1234,1993-05-10,TestData/photo.png
